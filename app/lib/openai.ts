@@ -65,7 +65,11 @@ export const SYSTEM_PROMPTS: Record<GameTemplate, string> = {
 - Platforms and obstacles
 - Collision detection
 - Score system
-- Use this.add.rectangle for graphics (no external images)
+- CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
+- NEVER use this.load.image(), this.load.sprite(), or any image loading
+- Do NOT use placeholder base64 images or external URLs
+- The preload() function should be empty or only contain this.load.image calls that are never used
+- Create ALL game objects with this.add.rectangle() in the create() function
 - Complete preload, create, update functions
 Output ONLY valid JavaScript, no explanations.`,
   puzzle: `You are an expert Phaser.js game developer. Generate a complete puzzle game with:
@@ -74,7 +78,10 @@ Output ONLY valid JavaScript, no explanations.`,
 - Mouse and keyboard input handling instructions on screen
 - Level reset or undo functionality
 - Scoring or progress tracking
-- Use this.add.rectangle and text for all visuals (no external images)
+- CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
+- NEVER use this.load.image(), this.load.sprite(), or any image loading
+- Do NOT use placeholder base64 images or external URLs
+- Create ALL game objects with this.add.rectangle() in the create() function
 - Implement preload, create, update functions fully
 Output ONLY valid JavaScript, no explanations.`,
   shooter: `You are an expert Phaser.js game developer. Generate a complete top-down shooter game with:
@@ -83,7 +90,10 @@ Output ONLY valid JavaScript, no explanations.`,
 - Shooting controls (spacebar or mouse)
 - Enemy spawning waves with increasing difficulty
 - Health and score tracking
-- Use this.add.rectangle for ships, bullets, and UI (no external images)
+- CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
+- NEVER use this.load.image(), this.load.sprite(), or any image loading
+- Do NOT use placeholder base64 images or external URLs
+- Create ALL game objects with this.add.rectangle() in the create() function
 - Complete preload, create, update functions with collision handling
 Output ONLY valid JavaScript, no explanations.`,
   racing: `You are an expert Phaser.js game developer. Generate a complete racing game with:
@@ -92,7 +102,10 @@ Output ONLY valid JavaScript, no explanations.`,
 - Track layout with checkpoints or lap counter
 - Opponent or time-trial mechanics
 - HUD with speed and lap information
-- Use this.add.rectangle for track pieces, cars, and UI (no external images)
+- CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
+- NEVER use this.load.image(), this.load.sprite(), or any image loading
+- Do NOT use placeholder base64 images or external URLs
+- Create ALL game objects with this.add.rectangle() in the create() function
 - Implement preload, create, update functions completely
 Output ONLY valid JavaScript, no explanations.`,
   custom: `You are an expert Phaser.js game developer. Generate a complete game tailored to the user's request with:
@@ -100,7 +113,10 @@ Output ONLY valid JavaScript, no explanations.`,
 - Mechanics and controls derived from the provided prompt
 - Clear instructions within the scene for how to play
 - Scoring or objective tracking
-- Use this.add.rectangle (and text) for all visuals (no external images)
+- CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
+- NEVER use this.load.image(), this.load.sprite(), or any image loading
+- Do NOT use placeholder base64 images or external URLs
+- Create ALL game objects with this.add.rectangle() in the create() function
 - Complete preload, create, update functions and ensure the code runs standalone
 Output ONLY valid JavaScript, no explanations.`,
 };
