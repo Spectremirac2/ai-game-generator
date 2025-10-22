@@ -68,10 +68,11 @@ export const SYSTEM_PROMPTS: Record<GameTemplate, string> = {
 - CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
 - Do NOT use placeholder base64 images or external URLs
-- Do NOT use this.physics.add.staticGroup() or this.physics.add.group()
-- Create each platform: const platform = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(platform); platform.body.setImmovable(true);
+- Do NOT use this.physics.add.staticGroup() - it does not work with rectangles
+- CORRECT APPROACH: Create platforms group: const platforms = this.physics.add.group();
+- For each platform: const platform = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(platform); platform.body.setImmovable(true); platforms.add(platform);
 - Create player: const player = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(player); player.body.setCollideWorldBounds(true);
-- Use this.physics.add.collider(player, platforms) to handle collisions
+- Use this.physics.add.collider(player, platforms) to handle collisions with the group
 - The preload() function should be empty
 - Complete preload, create, update functions
 Output ONLY valid JavaScript, no explanations.`,
@@ -84,7 +85,8 @@ Output ONLY valid JavaScript, no explanations.`,
 - CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
 - Do NOT use placeholder base64 images or external URLs
-- Do NOT use this.physics.add.staticGroup() or this.physics.add.group()
+- Do NOT use this.physics.add.staticGroup()
+- If you need physics groups: use const group = this.physics.add.group(); then group.add(object);
 - Create game objects: const obj = this.add.rectangle(x, y, w, h, color); if physics needed: this.physics.add.existing(obj);
 - The preload() function should be empty
 - Implement preload, create, update functions fully
@@ -98,7 +100,8 @@ Output ONLY valid JavaScript, no explanations.`,
 - CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
 - Do NOT use placeholder base64 images or external URLs
-- Do NOT use this.physics.add.staticGroup() or this.physics.add.group()
+- Do NOT use this.physics.add.staticGroup()
+- For collections (enemies, bullets): use const group = this.physics.add.group(); then group.add(object);
 - Create game objects: const obj = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(obj);
 - The preload() function should be empty
 - Complete preload, create, update functions with collision handling
@@ -112,7 +115,8 @@ Output ONLY valid JavaScript, no explanations.`,
 - CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
 - Do NOT use placeholder base64 images or external URLs
-- Do NOT use this.physics.add.staticGroup() or this.physics.add.group()
+- Do NOT use this.physics.add.staticGroup()
+- For collections: use const group = this.physics.add.group(); then group.add(object);
 - Create game objects: const obj = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(obj);
 - The preload() function should be empty
 - Implement preload, create, update functions completely
@@ -125,7 +129,8 @@ Output ONLY valid JavaScript, no explanations.`,
 - CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
 - Do NOT use placeholder base64 images or external URLs
-- Do NOT use this.physics.add.staticGroup() or this.physics.add.group()
+- Do NOT use this.physics.add.staticGroup()
+- For collections: use const group = this.physics.add.group(); then group.add(object);
 - Create game objects: const obj = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(obj);
 - The preload() function should be empty
 - Complete preload, create, update functions and ensure the code runs standalone
