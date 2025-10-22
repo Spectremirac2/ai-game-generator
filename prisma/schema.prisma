@@ -1,0 +1,142 @@
+/// Prisma Client generator used by the application.
+generator client {
+  provider = "prisma-client-js"
+}
+
+/// Primary Postgres datasource configuration.
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+/// Subscription tiers for platform users.
+enum UserTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+/// Supported game templates that the AI can generate.
+enum GameTemplate {
+  PLATFORMER
+  PUZZLE
+  SHOOTER
+  RACING
+  CUSTOM
+}
+
+/// Publication workflow state for generated games.
+enum GameStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+/// Visibility of a generated game inside the platform.
+enum Visibility {
+  PRIVATE
+  UNLISTED
+  PUBLIC
+}
+
+/// Processing lifecycle for asynchronous generation jobs.
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+/// Core user account record. Links to generated games, sessions, and billing tier.
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  image     String?
+  tier      UserTier  @default(FREE)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  /// All games authored by the user.
+  games     Game[]
+
+  /// Current NextAuth sessions for the user.
+  sessions  Session[]
+
+  @@index([email])
+}
+
+/// Generated game metadata, source code, and performance stats.
+model Game {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  code        String        @db.Text
+  template    GameTemplate
+  prompt      String        @db.Text
+  difficulty  String
+  playTime    String?
+  version     Int           @default(1)
+  assets      Json?
+  status      GameStatus    @default(DRAFT)
+  visibility  Visibility    @default(PRIVATE)
+  plays       Int           @default(0)
+  likes       Int           @default(0)
+  shares      Int           @default(0)
+  userId      String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  publishedAt DateTime?
+
+  /// Owning user; deleting a user cascades to their games.
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([visibility])
+  @@index([createdAt])
+}
+
+/// NextAuth session store linking tokens back to users.
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Background job tracking for queued AI generation tasks.
+model GenerationJob {
+  id           String    @id @default(cuid())
+  prompt       String    @db.Text
+  template     String
+  config       Json?
+  status       JobStatus @default(PENDING)
+  priority     Int       @default(5)
+  gameId       String?
+  errorMessage String?   @db.Text
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+/// Structured analytics events captured from the application.
+model AnalyticsEvent {
+  id         String    @id @default(cuid())
+  event      String
+  userId     String?
+  properties Json?
+  createdAt  DateTime  @default(now())
+
+  @@index([event])
+  @@index([createdAt])
+  @@index([userId])
+}

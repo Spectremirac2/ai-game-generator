@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎮 AI Game Generator
 
-## Getting Started
+Generate playable 2D games from text prompts using OpenAI GPT-4 and DALL-E 3.
 
-First, run the development server:
+## Features
+
+- 🤖 AI-powered game code generation (Phaser.js)
+- 🎨 AI-generated game sprites (DALL-E 3)
+- 🎮 5 game templates (Platformer, Puzzle, Shooter, Racing, Custom)
+- 💾 Redis caching for cost optimization
+- 🔐 GitHub/Google OAuth authentication
+- 📊 Analytics dashboard
+- ⚡ Background job processing
+- 🔒 Sandboxed game execution
+
+## Tech Stack
+
+- **Framework:** Next.js 15 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **AI:** OpenAI GPT-4o-mini, DALL-E 3
+- **Database:** PostgreSQL (Vercel Postgres)
+- **Cache:** Redis (Upstash)
+- **Auth:** NextAuth.js v5
+- **ORM:** Prisma
+- **Deployment:** Vercel
+
+## Prerequisites
+
+- Node.js 20+
+- pnpm
+- OpenAI API key
+- Vercel account (for Postgres)
+- Upstash account (for Redis)
+- GitHub OAuth App
+- Google OAuth credentials
+
+## Environment Variables
+
+See `.env.example` for required variables.
+
+## Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Clone repository
+git clone <repo-url>
+cd ai-game-generator
+
+# Install dependencies
+pnpm install
+
+# Setup database
+npx prisma generate
+npx prisma db push
+
+# Start development server
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production
+- `pnpm start` - Start production server
+- `pnpm lint` - Run ESLint
+- `pnpm type-check` - TypeScript check
+- `pnpm test` - Run tests
+- `pnpm db:studio` - Open Prisma Studio
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deployment
 
-## Learn More
+1. Push to GitHub
+2. Import to Vercel
+3. Add environment variables
+4. Deploy
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+MIT
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contributing
 
-## Deploy on Vercel
+Contributions welcome! Please open an issue first.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Support
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+For issues and questions, open a GitHub issue.

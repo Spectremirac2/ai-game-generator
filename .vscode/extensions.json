@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "prisma.prisma",
+    "ms-vscode.vscode-typescript-next",
+    "usernamehw.errorlens",
+    "christian-kohler.path-intellisense",
+    "eamodio.gitlens",
+    "github.copilot",
+    "github.copilot-chat"
+  ]
+}

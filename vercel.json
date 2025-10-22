@@ -1,0 +1,28 @@
+{
+  "buildCommand": "pnpm build",
+  "devCommand": "pnpm dev",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "crons": [
+    {
+      "path": "/api/cron/worker",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/cleanup",
+      "schedule": "0 */6 * * *"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_APP_URL": "https://ai-game-generator.vercel.app"
+  },
+  "regions": [
+    "iad1"
+  ],
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  }
+}
+
