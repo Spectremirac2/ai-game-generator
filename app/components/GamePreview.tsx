@@ -115,17 +115,29 @@ const GamePreview = ({
         display: block;
       }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"><\/script>
   </head>
   <body>
     <div id="game-root"></div>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js" onload="initGame()" onerror="handlePhaserLoadError()"><\/script>
     <script>
       (function () {
         const parentWindow = window.parent;
+        let phaserLoadFailed = false;
+
         function send(type, payload) {
-          if (!parentWindow) return;
-          parentWindow.postMessage({ type, payload }, "*");
+          try {
+            if (parentWindow) {
+              parentWindow.postMessage({ type, payload }, "*");
+            }
+          } catch (e) {
+            console.error("postMessage failed:", e);
+          }
         }
+
+        window.handlePhaserLoadError = function() {
+          phaserLoadFailed = true;
+          send("game-error", { message: "Failed to load Phaser.js from CDN" });
+        };
 
         function wrapConsole() {
           const originalLog = console.log;
@@ -147,24 +159,31 @@ const GamePreview = ({
         send("game-loading");
         wrapConsole();
 
-        function startGame() {
+        window.initGame = function() {
+          if (phaserLoadFailed) {
+            return;
+          }
+
           if (typeof Phaser === "undefined") {
-            throw new Error("Phaser failed to load.");
+            send("game-error", { message: "Phaser is not defined" });
+            return;
           }
 
           try {
             ${sanitizedCode}
-            send("game-loaded");
+            setTimeout(() => send("game-loaded"), 100);
           } catch (error) {
-            send("game-error", { message: error && error.message ? error.message : String(error) });
+            const message = error && error.message ? error.message : String(error);
+            send("game-error", { message: message });
           }
-        }
+        };
 
-        if (document.readyState === "complete") {
-          startGame();
-        } else {
-          window.addEventListener("load", startGame);
-        }
+        // Fallback if script doesn't call onload
+        setTimeout(function() {
+          if (typeof Phaser !== "undefined" && !phaserLoadFailed) {
+            window.initGame();
+          }
+        }, 1000);
       })();
     <\/script>
   </body>
@@ -371,7 +390,7 @@ const GamePreview = ({
           <iframe
             ref={iframeRef}
             title={game.metadata.title || "Game Preview"}
-            sandbox="allow-scripts"
+            sandbox="allow-scripts allow-same-origin"
             className="h-full w-full border-0"
           />
         </div>
