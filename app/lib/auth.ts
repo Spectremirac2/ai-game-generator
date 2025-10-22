@@ -5,18 +5,31 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 
 import prisma from "@/lib/prisma";
 
+const providers = [];
+
+// Only add GitHub provider if credentials are available
+if (process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET) {
+  providers.push(
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET,
+    })
+  );
+}
+
+// Only add Google provider if credentials are available
+if (process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET) {
+  providers.push(
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+    })
+  );
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  providers: [
-    GitHub({
-      clientId: process.env.AUTH_GITHUB_ID!,
-      clientSecret: process.env.AUTH_GITHUB_SECRET!,
-    }),
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID!,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
-    }),
-  ],
+  providers,
   callbacks: {
     async session({ session, user }) {
       if (session?.user) {
