@@ -5,7 +5,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 
 import prisma from "@/lib/prisma";
 
-const providers = [];
+const providers: any[] = [];
 
 // Only add GitHub provider if credentials are available
 if (process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET) {
@@ -27,9 +27,23 @@ if (process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET) {
   );
 }
 
+// NextAuth requires at least one provider - use a dummy one if none configured
+if (providers.length === 0) {
+  console.warn('[AUTH] No OAuth providers configured. Authentication will not work.');
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
-  providers,
+  adapter: providers.length > 0 ? PrismaAdapter(prisma) : undefined,
+  providers: providers.length > 0 ? providers : [
+    // Dummy provider to prevent NextAuth from crashing
+    {
+      id: "credentials",
+      name: "Credentials",
+      type: "credentials",
+      credentials: {},
+      authorize: async () => null,
+    } as any
+  ],
   callbacks: {
     async session({ session, user }) {
       if (session?.user) {
