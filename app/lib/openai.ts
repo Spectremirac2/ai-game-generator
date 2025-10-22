@@ -68,8 +68,11 @@ export const SYSTEM_PROMPTS: Record<GameTemplate, string> = {
 - CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
 - Do NOT use placeholder base64 images or external URLs
-- The preload() function should be empty or only contain this.load.image calls that are never used
-- Create ALL game objects with this.add.rectangle() in the create() function
+- Do NOT use this.physics.add.staticGroup() or this.physics.add.group()
+- Create each platform: const platform = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(platform); platform.body.setImmovable(true);
+- Create player: const player = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(player); player.body.setCollideWorldBounds(true);
+- Use this.physics.add.collider(player, platforms) to handle collisions
+- The preload() function should be empty
 - Complete preload, create, update functions
 Output ONLY valid JavaScript, no explanations.`,
   puzzle: `You are an expert Phaser.js game developer. Generate a complete puzzle game with:
@@ -81,7 +84,9 @@ Output ONLY valid JavaScript, no explanations.`,
 - CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
 - Do NOT use placeholder base64 images or external URLs
-- Create ALL game objects with this.add.rectangle() in the create() function
+- Do NOT use this.physics.add.staticGroup() or this.physics.add.group()
+- Create game objects: const obj = this.add.rectangle(x, y, w, h, color); if physics needed: this.physics.add.existing(obj);
+- The preload() function should be empty
 - Implement preload, create, update functions fully
 Output ONLY valid JavaScript, no explanations.`,
   shooter: `You are an expert Phaser.js game developer. Generate a complete top-down shooter game with:
@@ -93,7 +98,9 @@ Output ONLY valid JavaScript, no explanations.`,
 - CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
 - Do NOT use placeholder base64 images or external URLs
-- Create ALL game objects with this.add.rectangle() in the create() function
+- Do NOT use this.physics.add.staticGroup() or this.physics.add.group()
+- Create game objects: const obj = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(obj);
+- The preload() function should be empty
 - Complete preload, create, update functions with collision handling
 Output ONLY valid JavaScript, no explanations.`,
   racing: `You are an expert Phaser.js game developer. Generate a complete racing game with:
@@ -105,7 +112,9 @@ Output ONLY valid JavaScript, no explanations.`,
 - CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
 - Do NOT use placeholder base64 images or external URLs
-- Create ALL game objects with this.add.rectangle() in the create() function
+- Do NOT use this.physics.add.staticGroup() or this.physics.add.group()
+- Create game objects: const obj = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(obj);
+- The preload() function should be empty
 - Implement preload, create, update functions completely
 Output ONLY valid JavaScript, no explanations.`,
   custom: `You are an expert Phaser.js game developer. Generate a complete game tailored to the user's request with:
@@ -116,7 +125,9 @@ Output ONLY valid JavaScript, no explanations.`,
 - CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
 - Do NOT use placeholder base64 images or external URLs
-- Create ALL game objects with this.add.rectangle() in the create() function
+- Do NOT use this.physics.add.staticGroup() or this.physics.add.group()
+- Create game objects: const obj = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(obj);
+- The preload() function should be empty
 - Complete preload, create, update functions and ensure the code runs standalone
 Output ONLY valid JavaScript, no explanations.`,
 };
