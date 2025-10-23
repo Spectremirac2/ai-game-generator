@@ -75,6 +75,88 @@ const LandingPage = () => {
     setError(null);
   }, []);
 
+  const handleDownload = useCallback(() => {
+    if (!generatedGame) return;
+
+    const sanitizedCode = generatedGame.code.replace(/<\/script>/gi, "<\\/script>");
+    const pageTitle = (generatedGame.metadata.title || "Game")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>${pageTitle}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #000;
+        color: #fff;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      #game-root, canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-root"></div>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"><\/script>
+    <script>
+      ${sanitizedCode}
+    <\/script>
+  </body>
+</html>`;
+
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${generatedGame.metadata.title?.replace(/[^a-z0-9]/gi, "-").toLowerCase() || "game"}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [generatedGame]);
+
+  const handleSave = useCallback(async () => {
+    if (!generatedGame) return;
+
+    try {
+      const response = await fetch("/api/games", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          code: generatedGame.code,
+          metadata: generatedGame.metadata,
+          assets: generatedGame.assets,
+        }),
+      });
+
+      if (response.ok) {
+        alert("Game saved successfully!");
+      } else {
+        // If save fails, just download instead
+        handleDownload();
+      }
+    } catch (err) {
+      // If API doesn't exist, just download
+      handleDownload();
+    }
+  }, [generatedGame, handleDownload]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-blue-100 px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
@@ -96,7 +178,11 @@ const LandingPage = () => {
         {!generatedGame ? (
           <GamePromptForm onGenerate={handleGenerate} isGenerating={isGenerating} />
         ) : (
-          <GamePreview game={generatedGame} onRegenerate={handleRegenerate} />
+          <GamePreview
+            game={generatedGame}
+            onRegenerate={handleRegenerate}
+            onSave={handleSave}
+          />
         )}
 
         <footer className="pb-12 text-center text-xs text-slate-500 sm:text-sm">
