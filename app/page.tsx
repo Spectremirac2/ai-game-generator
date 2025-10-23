@@ -151,7 +151,7 @@ const LandingPage = () => {
         // If save fails, just download instead
         handleDownload();
       }
-    } catch (err) {
+    } catch {
       // If API doesn't exist, just download
       handleDownload();
     }
