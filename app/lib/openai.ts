@@ -69,10 +69,13 @@ export const SYSTEM_PROMPTS: Record<GameTemplate, string> = {
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
 - Do NOT use placeholder base64 images or external URLs
 - Do NOT use this.physics.add.staticGroup() - it does not work with rectangles
-- CORRECT APPROACH: Create platforms group: const platforms = this.physics.add.group();
-- For each platform: const platform = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(platform); platform.body.setImmovable(true); platforms.add(platform);
-- Create player: const player = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(player); player.body.setCollideWorldBounds(true);
-- Use this.physics.add.collider(player, platforms) to handle collisions with the group
+- CRITICAL SCOPE: Store ALL game objects as scene properties using 'this.' prefix (this.player, this.platforms, this.cursors, etc.) so they are accessible in update()
+- CORRECT APPROACH: Create platforms group: this.platforms = this.physics.add.group();
+- For each platform: const platform = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(platform); platform.body.setImmovable(true); this.platforms.add(platform);
+- Create player: this.player = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(this.player); this.player.body.setCollideWorldBounds(true);
+- Create input: this.cursors = this.input.keyboard.createCursorKeys();
+- Use this.physics.add.collider(this.player, this.platforms) to handle collisions with the group
+- In update() function, use this.player, this.cursors, etc. to access game objects
 - The preload() function should be empty
 - Complete preload, create, update functions
 Output ONLY valid JavaScript, no explanations.`,
@@ -86,8 +89,11 @@ Output ONLY valid JavaScript, no explanations.`,
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
 - Do NOT use placeholder base64 images or external URLs
 - Do NOT use this.physics.add.staticGroup()
-- If you need physics groups: use const group = this.physics.add.group(); then group.add(object);
-- Create game objects: const obj = this.add.rectangle(x, y, w, h, color); if physics needed: this.physics.add.existing(obj);
+- CRITICAL SCOPE: Store ALL game objects and groups as scene properties using 'this.' prefix (this.tiles, this.scoreText, etc.) so they are accessible in update()
+- If you need physics groups: use this.group = this.physics.add.group(); then this.group.add(object);
+- Create game objects: this.obj = this.add.rectangle(x, y, w, h, color); if physics needed: this.physics.add.existing(this.obj);
+- Store input references: this.input.on('pointerdown', ...) or this.keys = this.input.keyboard.addKeys('W,A,S,D');
+- In update() function, use this.obj, this.scoreText, etc. to access game objects
 - The preload() function should be empty
 - Implement preload, create, update functions fully
 Output ONLY valid JavaScript, no explanations.`,
@@ -101,8 +107,11 @@ Output ONLY valid JavaScript, no explanations.`,
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
 - Do NOT use placeholder base64 images or external URLs
 - Do NOT use this.physics.add.staticGroup()
-- For collections (enemies, bullets): use const group = this.physics.add.group(); then group.add(object);
-- Create game objects: const obj = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(obj);
+- CRITICAL SCOPE: Store ALL game objects and groups as scene properties using 'this.' prefix (this.player, this.enemies, this.bullets, this.cursors, etc.) so they are accessible in update()
+- For collections (enemies, bullets): use this.enemies = this.physics.add.group(); this.bullets = this.physics.add.group();
+- Create game objects: this.player = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(this.player);
+- Store input: this.cursors = this.input.keyboard.createCursorKeys(); this.spaceKey = this.input.keyboard.addKey('SPACE');
+- In update() function, use this.player, this.enemies, this.bullets, etc. to access game objects
 - The preload() function should be empty
 - Complete preload, create, update functions with collision handling
 Output ONLY valid JavaScript, no explanations.`,
@@ -116,8 +125,11 @@ Output ONLY valid JavaScript, no explanations.`,
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
 - Do NOT use placeholder base64 images or external URLs
 - Do NOT use this.physics.add.staticGroup()
-- For collections: use const group = this.physics.add.group(); then group.add(object);
-- Create game objects: const obj = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(obj);
+- CRITICAL SCOPE: Store ALL game objects and groups as scene properties using 'this.' prefix (this.player, this.obstacles, this.cursors, this.speedText, etc.) so they are accessible in update()
+- For collections: use this.obstacles = this.physics.add.group(); then this.obstacles.add(object);
+- Create game objects: this.player = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(this.player);
+- Store input: this.cursors = this.input.keyboard.createCursorKeys();
+- In update() function, use this.player, this.cursors, this.speedText, etc. to access game objects
 - The preload() function should be empty
 - Implement preload, create, update functions completely
 Output ONLY valid JavaScript, no explanations.`,
@@ -130,8 +142,11 @@ Output ONLY valid JavaScript, no explanations.`,
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
 - Do NOT use placeholder base64 images or external URLs
 - Do NOT use this.physics.add.staticGroup()
-- For collections: use const group = this.physics.add.group(); then group.add(object);
-- Create game objects: const obj = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(obj);
+- CRITICAL SCOPE: Store ALL game objects and groups as scene properties using 'this.' prefix (this.player, this.objects, this.cursors, etc.) so they are accessible in update()
+- For collections: use this.group = this.physics.add.group(); then this.group.add(object);
+- Create game objects: this.obj = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(this.obj);
+- Store input: this.cursors = this.input.keyboard.createCursorKeys() or this.input.on('pointerdown', ...);
+- In update() function, use this.obj, this.cursors, etc. to access game objects
 - The preload() function should be empty
 - Complete preload, create, update functions and ensure the code runs standalone
 Output ONLY valid JavaScript, no explanations.`,
