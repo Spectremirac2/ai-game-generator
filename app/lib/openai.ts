@@ -58,51 +58,71 @@ export interface GameCodeOutput extends GameCode {
  * Detailed system prompts for each supported template.
  */
 export const SYSTEM_PROMPTS: Record<GameTemplate, string> = {
-  platformer: `You are an expert Phaser.js game developer. Generate a complete platformer game.
+  platformer: `CRITICAL: Copy the code below EXACTLY. Only change the values I specify.
 
-CRITICAL REQUIREMENTS:
-- Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
-- NEVER use this.load.image(), this.load.sprite(), or any image loading
-- Store ALL variables as scene properties with 'this.' prefix
-- The preload() function MUST be empty
+COPY THIS CODE EXACTLY:
 
-EXAMPLE STRUCTURE (follow this pattern):
 const config = {
   type: Phaser.AUTO,
   width: 800,
   height: 600,
-  physics: { default: 'arcade', arcade: { gravity: { y: 300 }, debug: false } },
+  backgroundColor: '#1a1a2e',
+  physics: {
+    default: 'arcade',
+    arcade: {
+      gravity: { y: 300 },
+      debug: false
+    }
+  },
   scene: {
     preload: function() {},
     create: function() {
-      // Store score as scene property
-      this.score = 0;
-      this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#fff' });
+      this.add.text(400, 50, 'PLATFORMER GAME', { fontSize: '32px', fill: '#00ff00', fontStyle: 'bold' }).setOrigin(0.5);
+      this.add.text(400, 100, 'Arrow Keys to Move, Up to Jump', { fontSize: '16px', fill: '#ffffff' }).setOrigin(0.5);
 
-      // Create platforms group
+      this.score = 0;
+      this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '20px', fill: '#ffffff' });
+
       this.platforms = this.physics.add.group();
 
-      // Add each platform (MUST add physics body to each!)
       const ground = this.add.rectangle(400, 568, 800, 64, 0x00ff00);
       this.physics.add.existing(ground);
       ground.body.setImmovable(true);
       this.platforms.add(ground);
 
-      const ledge1 = this.add.rectangle(600, 400, 200, 32, 0x00ff00);
+      const ledge1 = this.add.rectangle(600, 400, 200, 32, 0x0000ff);
       this.physics.add.existing(ledge1);
       ledge1.body.setImmovable(true);
       this.platforms.add(ledge1);
 
-      // Create player
+      const ledge2 = this.add.rectangle(50, 250, 200, 32, 0x0000ff);
+      this.physics.add.existing(ledge2);
+      ledge2.body.setImmovable(true);
+      this.platforms.add(ledge2);
+
+      const ledge3 = this.add.rectangle(750, 220, 200, 32, 0x0000ff);
+      this.physics.add.existing(ledge3);
+      ledge3.body.setImmovable(true);
+      this.platforms.add(ledge3);
+
       this.player = this.add.rectangle(100, 450, 32, 48, 0xff0000);
       this.physics.add.existing(this.player);
       this.player.body.setBounce(0.2);
       this.player.body.setCollideWorldBounds(true);
 
-      // Setup collision
-      this.physics.add.collider(this.player, this.platforms);
+      this.collectibles = this.physics.add.group();
+      for (let i = 0; i < 8; i++) {
+        const x = Phaser.Math.Between(50, 750);
+        const star = this.add.rectangle(x, 0, 20, 20, 0xffff00);
+        this.physics.add.existing(star);
+        star.body.setBounce(0.4);
+        this.collectibles.add(star);
+      }
 
-      // Setup controls
+      this.physics.add.collider(this.player, this.platforms);
+      this.physics.add.collider(this.collectibles, this.platforms);
+      this.physics.add.overlap(this.player, this.collectibles, this.collectStar, null, this);
+
       this.cursors = this.input.keyboard.createCursorKeys();
     },
     update: function() {
@@ -117,12 +137,34 @@ const config = {
       if (this.cursors.up.isDown && this.player.body.touching.down) {
         this.player.body.setVelocityY(-330);
       }
+    },
+    collectStar: function(player, star) {
+      star.destroy();
+      this.score += 10;
+      this.scoreText.setText('Score: ' + this.score);
     }
   }
 };
+
 const game = new Phaser.Game(config);
 
-Follow this EXACT pattern. Output ONLY valid JavaScript code.`,
+ALLOWED CHANGES ONLY (based on user prompt):
+- backgroundColor value (keep as hex color)
+- Text content for title
+- Platform colors (0x...... hex values)
+- Platform positions and sizes
+- Player color
+- Collectible color
+- Add 1-2 more platforms if needed (copy exact ledge pattern)
+
+DO NOT CHANGE:
+- Variable names
+- Function names
+- Structure
+- Physics settings
+- Control logic
+
+Output ONLY the complete code above with your modifications.`,
   puzzle: `You are an expert Phaser.js game developer. Generate a complete puzzle game with:
 - Phaser 3 syntax
 - Grid-based or logic puzzle mechanics
