@@ -58,27 +58,71 @@ export interface GameCodeOutput extends GameCode {
  * Detailed system prompts for each supported template.
  */
 export const SYSTEM_PROMPTS: Record<GameTemplate, string> = {
-  platformer: `You are an expert Phaser.js game developer. Generate a complete platformer game with:
-- Phaser 3 syntax
-- Player movement (arrow keys/WASD)
-- Jump mechanics
-- Platforms and obstacles
-- Collision detection
-- Score system
-- CRITICAL: Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
+  platformer: `You are an expert Phaser.js game developer. Generate a complete platformer game.
+
+CRITICAL REQUIREMENTS:
+- Use ONLY this.add.rectangle() and this.add.text() for ALL visuals
 - NEVER use this.load.image(), this.load.sprite(), or any image loading
-- Do NOT use placeholder base64 images or external URLs
-- Do NOT use this.physics.add.staticGroup() - it does not work with rectangles
-- CRITICAL SCOPE: Store ALL game objects as scene properties using 'this.' prefix (this.player, this.platforms, this.cursors, etc.) so they are accessible in update()
-- CORRECT APPROACH: Create platforms group: this.platforms = this.physics.add.group();
-- For each platform: const platform = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(platform); platform.body.setImmovable(true); this.platforms.add(platform);
-- Create player: this.player = this.add.rectangle(x, y, w, h, color); this.physics.add.existing(this.player); this.player.body.setCollideWorldBounds(true);
-- Create input: this.cursors = this.input.keyboard.createCursorKeys();
-- Use this.physics.add.collider(this.player, this.platforms) to handle collisions with the group
-- In update() function, use this.player, this.cursors, etc. to access game objects
-- The preload() function should be empty
-- Complete preload, create, update functions
-Output ONLY valid JavaScript, no explanations.`,
+- Store ALL variables as scene properties with 'this.' prefix
+- The preload() function MUST be empty
+
+EXAMPLE STRUCTURE (follow this pattern):
+const config = {
+  type: Phaser.AUTO,
+  width: 800,
+  height: 600,
+  physics: { default: 'arcade', arcade: { gravity: { y: 300 }, debug: false } },
+  scene: {
+    preload: function() {},
+    create: function() {
+      // Store score as scene property
+      this.score = 0;
+      this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#fff' });
+
+      // Create platforms group
+      this.platforms = this.physics.add.group();
+
+      // Add each platform (MUST add physics body to each!)
+      const ground = this.add.rectangle(400, 568, 800, 64, 0x00ff00);
+      this.physics.add.existing(ground);
+      ground.body.setImmovable(true);
+      this.platforms.add(ground);
+
+      const ledge1 = this.add.rectangle(600, 400, 200, 32, 0x00ff00);
+      this.physics.add.existing(ledge1);
+      ledge1.body.setImmovable(true);
+      this.platforms.add(ledge1);
+
+      // Create player
+      this.player = this.add.rectangle(100, 450, 32, 48, 0xff0000);
+      this.physics.add.existing(this.player);
+      this.player.body.setBounce(0.2);
+      this.player.body.setCollideWorldBounds(true);
+
+      // Setup collision
+      this.physics.add.collider(this.player, this.platforms);
+
+      // Setup controls
+      this.cursors = this.input.keyboard.createCursorKeys();
+    },
+    update: function() {
+      if (this.cursors.left.isDown) {
+        this.player.body.setVelocityX(-160);
+      } else if (this.cursors.right.isDown) {
+        this.player.body.setVelocityX(160);
+      } else {
+        this.player.body.setVelocityX(0);
+      }
+
+      if (this.cursors.up.isDown && this.player.body.touching.down) {
+        this.player.body.setVelocityY(-330);
+      }
+    }
+  }
+};
+const game = new Phaser.Game(config);
+
+Follow this EXACT pattern. Output ONLY valid JavaScript code.`,
   puzzle: `You are an expert Phaser.js game developer. Generate a complete puzzle game with:
 - Phaser 3 syntax
 - Grid-based or logic puzzle mechanics
