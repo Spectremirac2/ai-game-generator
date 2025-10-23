@@ -28,40 +28,55 @@ export async function POST(request: NextRequest) {
     const preflightCostEstimate = estimatePromptCost(payload.prompt);
     logRequestStart(requestId, payload, preflightCostEstimate);
 
-    const clientIp =
-      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      request.headers.get("x-real-ip") ??
-      "unknown";
+    // Rate limiting - disabled if env var set
+    const rateLimitDisabled = process.env.RATE_LIMIT_FREE_TIER === "0";
+    if (!rateLimitDisabled) {
+      const clientIp =
+        request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+        request.headers.get("x-real-ip") ??
+        "unknown";
 
-    const rateLimitKey = payload.userId ?? clientIp;
-    const rateLimit = await checkRateLimit(rateLimitKey, 10);
+      const rateLimitKey = payload.userId ?? clientIp;
+      try {
+        const rateLimit = await checkRateLimit(rateLimitKey, 10);
 
-    if (!rateLimit.allowed) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: "RATE_LIMIT_EXCEEDED",
-            message: `Rate limit exceeded. Try again after ${rateLimit.reset.toISOString()}`,
-          },
-          meta: buildMeta(startedAt, requestId, undefined, {
-            cacheHit: false,
-            rateLimit: {
-              remaining: 0,
-              reset: rateLimit.reset.toISOString(),
+        if (!rateLimit.allowed) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: {
+                code: "RATE_LIMIT_EXCEEDED",
+                message: `Rate limit exceeded. Try again after ${rateLimit.reset.toISOString()}`,
+              },
+              meta: buildMeta(startedAt, requestId, undefined, {
+                cacheHit: false,
+                rateLimit: {
+                  remaining: 0,
+                  reset: rateLimit.reset.toISOString(),
+                },
+              }),
             },
-          }),
-        },
-        { status: 429 }
-      );
+            { status: 429 }
+          );
+        }
+      } catch (rateLimitError) {
+        console.error("[rate-limit] error, continuing without rate limit", rateLimitError);
+      }
     }
 
     type GameGenerationResult = Awaited<ReturnType<typeof generateGameCode>>;
     const template = payload.template as GameTemplate;
-    const cachedResult = await getCachedGameCode<GameGenerationResult>(payload.prompt, template);
 
     let cacheHit = false;
     let result: GameGenerationResult;
+    let cachedResult: GameGenerationResult | null = null;
+
+    // Try to get from cache, but don't fail if cache errors
+    try {
+      cachedResult = await getCachedGameCode<GameGenerationResult>(payload.prompt, template);
+    } catch (cacheError) {
+      console.error("[cache] get error, continuing without cache", cacheError);
+    }
 
     if (cachedResult) {
       cacheHit = true;
@@ -70,17 +85,19 @@ export async function POST(request: NextRequest) {
     } else {
       console.log("❌ Cache MISS", { requestId, template });
       result = await generateGameCode(payload.prompt, template);
-      await cacheGameCode(payload.prompt, template, result);
+
+      // Try to cache, but don't fail if it errors
+      try {
+        await cacheGameCode(payload.prompt, template, result);
+      } catch (cacheError) {
+        console.error("[cache] set error, continuing without caching", cacheError);
+      }
     }
 
     const responseCost = result.usage?.estimatedCost ?? preflightCostEstimate;
     const game = buildGeneratedGame(template, result);
     const meta = buildMeta(startedAt, requestId, responseCost, {
       cacheHit,
-      rateLimit: {
-        remaining: Math.max(0, rateLimit.remaining),
-        reset: rateLimit.reset.toISOString(),
-      },
     });
 
     return NextResponse.json(
