@@ -449,27 +449,40 @@ Powered by **AI Game Generator Factory**
 
   /**
    * Create ZIP file from assembled game
-   * Note: This requires a ZIP library like JSZip or archiver
    */
   async createZip(assembled: AssembledGame): Promise<Buffer> {
     logger.info("Assembler: Creating ZIP archive", {
       filesCount: assembled.manifest.filesCount,
     });
 
-    // TODO: Implement ZIP creation using JSZip or archiver
-    // For now, return a placeholder
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
 
-    throw new Error("ZIP creation not yet implemented - install JSZip first");
+      // Add all files to ZIP
+      for (const [filename, content] of Object.entries(assembled.files)) {
+        zip.file(filename, content);
+      }
 
-    // Example with JSZip:
-    // const JSZip = require('jszip');
-    // const zip = new JSZip();
-    //
-    // for (const [filename, content] of Object.entries(assembled.files)) {
-    //   zip.file(filename, content);
-    // }
-    //
-    // return await zip.generateAsync({ type: 'nodebuffer' });
+      // Generate ZIP buffer
+      const zipBuffer = await zip.generateAsync({
+        type: "nodebuffer",
+        compression: "DEFLATE",
+        compressionOptions: {
+          level: 9, // Maximum compression
+        },
+      });
+
+      logger.info("Assembler: ZIP archive created", {
+        size: zipBuffer.length,
+        compression: "DEFLATE",
+      });
+
+      return zipBuffer;
+    } catch (error) {
+      logger.error("Assembler: Failed to create ZIP archive", { error });
+      throw new Error(`Failed to create ZIP archive: ${error}`);
+    }
   }
 }
 
