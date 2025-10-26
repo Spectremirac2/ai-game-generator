@@ -1,0 +1,203 @@
+// Supabase Edge Function - Assembler
+// Combines AI-generated assets into final game package
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+interface AssembleRequest {
+  jobId: string;
+  template: string;
+  sprites: {
+    player: string;
+    background: string;
+    enemies?: string[];
+  };
+  code: {
+    player: string;
+    enemies?: string;
+    physics?: string;
+    level?: string;
+  };
+  metadata: {
+    gameType: string;
+    theme: string;
+    author: string;
+  };
+}
+
+serve(async (req) => {
+  try {
+    if (req.method === "OPTIONS") {
+      return new Response(null, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+        },
+      });
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("Missing authorization header");
+    }
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseClient.auth.getUser(authHeader.replace("Bearer ", ""));
+
+    if (authError || !user) {
+      throw new Error("Unauthorized");
+    }
+
+    const body: AssembleRequest = await req.json();
+
+    // 1. Load template
+    console.log(`Assembling game for job ${body.jobId}`);
+    const template = await loadTemplate(body.template);
+
+    // 2. Replace placeholders
+    let gameCode = template.code;
+    gameCode = gameCode.replace("[PLAYER_SPRITE_PATH]", body.sprites.player);
+    gameCode = gameCode.replace("[BG_SPRITE_PATH]", body.sprites.background);
+    gameCode = gameCode.replace("[PLAYER_LOGIC_CODE]", body.code.player);
+
+    if (body.sprites.enemies && body.code.enemies) {
+      gameCode = gameCode.replace("[ENEMY_SPRITE_PATHS]", JSON.stringify(body.sprites.enemies));
+      gameCode = gameCode.replace("[ENEMY_LOGIC_CODE]", body.code.enemies);
+    }
+
+    if (body.code.physics) {
+      gameCode = gameCode.replace("[PHYSICS_CODE]", body.code.physics);
+    }
+
+    if (body.code.level) {
+      gameCode = gameCode.replace("[LEVEL_CODE]", body.code.level);
+    }
+
+    // 3. Create project structure
+    const projectFiles = {
+      "index.html": generateHTML(body.metadata.gameType),
+      "game.js": gameCode,
+      "README.md": generateReadme(body.metadata),
+      "package.json": generatePackageJson(body.metadata),
+    };
+
+    // 4. Create ZIP (would use JSZip or similar library)
+    // For now, return the assembled code
+    console.log(`Game assembled for job ${body.jobId}`);
+
+    // 5. Upload to Supabase Storage
+    // const { data: uploadData, error: uploadError } = await supabaseClient
+    //   .storage
+    //   .from('games')
+    //   .upload(`${user.id}/${body.jobId}.zip`, zipBuffer);
+
+    // 6. Update job status
+    const { error: updateError } = await supabaseClient
+      .from("generation_jobs")
+      .update({
+        status: "completed",
+        // download_url: uploadData.path,
+        completed_at: new Date().toISOString(),
+      })
+      .eq("id", body.jobId);
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        jobId: body.jobId,
+        files: Object.keys(projectFiles),
+        // downloadUrl: uploadData.path,
+      }),
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Assembler error:", error);
+
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message,
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      }
+    );
+  }
+});
+
+// Helper functions
+async function loadTemplate(templateType: string): Promise<{ code: string }> {
+  // In production, load from storage or database
+  return {
+    code: `// ${templateType} template\n// Placeholder code`,
+  };
+}
+
+function generateHTML(gameType: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${gameType} Game</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+</head>
+<body>
+  <script src="game.js"></script>
+</body>
+</html>`;
+}
+
+function generateReadme(metadata: any): string {
+  return `# ${metadata.gameType} Game
+
+Theme: ${metadata.theme}
+Generated with AI Game Generator
+
+## How to Play
+
+1. Open index.html in a web browser
+2. Use arrow keys to move
+3. Have fun!
+
+## Credits
+
+- Generated by: ${metadata.author}
+- Powered by: AI Game Generator Factory
+`;
+}
+
+function generatePackageJson(metadata: any): string {
+  return JSON.stringify(
+    {
+      name: `${metadata.gameType}-game`,
+      version: "1.0.0",
+      description: `AI-generated ${metadata.gameType} game`,
+      scripts: {
+        start: "npx http-server .",
+      },
+    },
+    null,
+    2
+  );
+}
